@@ -10,10 +10,8 @@
 
 #define ENABLE_PIN 2
 
-#define ULTRA_1_ECHO 12
 #define ULTRA_1_TRIG 11
-#define ULTRA_R_ECHO A1
-#define ULTRA_L_ECHO A2
+#define ULTRA_1_ECHO 12
 
 #define IR_SENSOR_L 9
 #define IR_SENSOR_R 10
@@ -23,7 +21,7 @@
 bool enabled = false;
 
 Motor *motorL, *motorR;
-Ultra *ultra, *ultraR, *ultraL;
+Ultra *ultra;
 IR *lightL, *lightR;
 Button *button;
 
@@ -69,8 +67,6 @@ void setup() {
   );
   motorR = new Motor(MOTOR_B_2, MOTOR_B_1, MOTOR_B_PWM);
   ultra = new Ultra(ULTRA_1_ECHO, ULTRA_1_TRIG);
-  ultraR = new Ultra(ULTRA_R_ECHO, ULTRA_1_TRIG);
-  ultraL = new Ultra(ULTRA_L_ECHO, ULTRA_1_TRIG);
   button = new Button(STOP_BTN);
 
   lightL = new IR(IR_SENSOR_L);
@@ -86,6 +82,7 @@ int spinDirection = 0;
 
 void loop() {
   if(button->isClicked()) {
+    Serial.println("Clicked");
     ToggleMovement();
   }
   switch((!lightL->isCovered() << 1) + (!lightR->isCovered())) {
@@ -99,22 +96,9 @@ void loop() {
       spinDirection = 3;
       break;
     case 0:
-      //Serial.println(ultra->getDistanceSync(300000));
       float d = ultra->getDistanceSync(60000);
-      //Serial.print("Center: ");
-      Serial.println(d);
-      //Serial.print("Right:  ");
-      //Serial.println(dR);
-      //Serial.print("Left:  ");
-      //Serial.println(dL);
       if(d < 60) {
-        if(ultraR->getDistanceSync(60000)<d) {
-          spinDirection = 4;
-        } else if(ultraL->getDistanceSync(60000) < d){
-          spinDirection = 5;
-        } else {
-          spinDirection = 1;
-        }
+        spinDirection = 1;
       } else if(spinDirection==1){
         spinDirection = 2;
       }
